@@ -1,3 +1,6 @@
+import json
+import os
+
 
 class Product:
     """Класс для формирования списка продуктов"""
@@ -5,11 +8,13 @@ class Product:
     description: str
     price: float
     quantity: int
+
     def __init__(self, name, description, price, quantity):
         self.name = name
         self.description = description
         self.price = price
         self.quantity = quantity
+
 
 class Category:
     """Класс для подсчета количества товаров и категорий указанных продуктов"""
@@ -18,14 +23,33 @@ class Category:
     products: list
     product_count = 0
     category_count = 0
+
     def __init__(self, name, description, products):
         self.name = name
         self.description = description
         self.products = products
         self.product_count = len(self.products)
-        Category.product_count += self.product_count 
+        Category.product_count += self.product_count
         Category.category_count += 1
 
+
+def read_json(path: str) -> dict:
+    full_path = os.path.abspath(path)
+    with open(full_path, 'r', encoding="UTF-8") as file:
+        data = json.load(file)
+    return data
+
+
+def create_objects_from_json(data: dict) -> list:
+    categories = []
+    for category_data in data:
+        products = []
+        for product_data in category_data['products']:
+            products.append(Product(**product_data))
+        categories.append(Category(name=category_data['name'],
+                                   description=category_data['description'],
+                                   products=products))
+    return categories
 
 
 if __name__ == "__main__":
@@ -49,7 +73,8 @@ if __name__ == "__main__":
     print(product3.quantity)
 
     category1 = Category("Смартфоны",
-                         "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
+                         "Смартфоны, как средство не только коммуникации,\
+                         но и получения дополнительных функций для удобства жизни",
                          [product1, product2, product3])
 
     print(category1.name == "Смартфоны")
@@ -60,7 +85,8 @@ if __name__ == "__main__":
 
     product4 = Product("55\" QLED 4K", "Фоновая подсветка", 123000.0, 7)
     category2 = Category("Телевизоры",
-                         "Современный телевизор, который позволяет наслаждаться просмотром, станет вашим другом и помощником",
+                         "Современный телевизор, который позволяет наслаждаться просмотром,\
+                          станет вашим другом и помощником",
                          [product4])
 
     print(category2.name)
@@ -70,3 +96,8 @@ if __name__ == "__main__":
 
     print(Category.category_count)
     print(Category.product_count)
+
+    raw_data = read_json("../data/products.json")
+    categories_data = create_objects_from_json(raw_data)
+    print(categories_data[0].name)
+    print(categories_data[1].name)
