@@ -19,3 +19,32 @@ def category(products):
                     "но и получения дополнительных функций для удобства жизни",
         products=products
     )
+
+
+@pytest.fixture
+def test_data():
+    return [
+        {
+            "name": "Смартфоны",
+            "description": "Описание категории смартфонов",
+            "products": [
+                {
+                    "name": "Samsung Galaxy S23 Ultra",
+                    "description": "256GB, Серый цвет, 200MP камера",
+                    "price": 180000.0,
+                    "quantity": 5
+                },
+                {
+                    "name": "Iphone 15",
+                    "description": "512GB, Gray space",
+                    "price": 210000.0,
+                    "quantity": 8
+                }
+            ]
+        }
+    ]
+
+
+@pytest.fixture
+def product():
+    return Product(name='Test Product', description='Test Description', price=100.0, quantity=10)
