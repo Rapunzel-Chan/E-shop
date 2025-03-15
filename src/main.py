@@ -45,7 +45,12 @@ class Product:
         else:
             self.__price = new_price
             print(f'Цена успешно изменена на {self.__price} руб.')
+    def __str__(self):
+        return f'{self.name}, {self.__price} руб. Остаток: {self.quantity} шт.'
 
+    def __add__(self, other):
+        total = self.__price * self.quantity + other.price * other.quantity
+        return total
 
 class Category:
     """Класс для подсчета количества товаров и категорий указанных продуктов"""
@@ -62,6 +67,14 @@ class Category:
         self.product_count = len(self.__products)
         Category.product_count += self.product_count
         Category.category_count += 1
+
+
+    def __str__(self):
+        total_quantity = sum(product.quantity for product in self.__products)
+        return f'{self.name}, количество продуктов: {total_quantity} шт.'
+
+    def __iter__(self):
+        return ProductIterator(self)
 
     def add_product(self, product):
         """Cпециальный метод добавления товара"""
@@ -83,7 +96,7 @@ class Category:
         """Геттер для получения списка продуктов в формате строки."""
         products = ''
         for product in self.__products:
-            products += f"{product.name}, {product.price} руб. Остаток: {product.quantity} шт.\n"
+            products += f"{str(product)}\n"
         return products
 
 
@@ -106,6 +119,23 @@ def create_objects_from_json(data: dict) -> list:
                                    products=products))
     return categories
 
+class ProductIterator:
+    """Класс для перебора продуктов"""
+    def __init__(self, category):
+        self.category = category
+        self.index = 0
+
+    def __iter__(self):
+        self.index = 0
+        return self
+
+    def __next__(self):
+        if self.index < len(self.category.products):
+            product = self.category.products[self.index]
+            self.index += 1
+            return product
+        else:
+            raise StopIteration
 
 if __name__ == "__main__":
     product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
@@ -147,3 +177,17 @@ if __name__ == "__main__":
     categories_data = create_objects_from_json(raw_data)
     print(categories_data[0].name)
     print(categories_data[1].name)
+
+    print(str(product1))
+    print(str(product2))
+    print(str(product3))
+    print(str(category1))
+
+    print(category1.products)
+
+    print(product1 + product2)
+    print(product1 + product3)
+    print(product2 + product3)
+
+    for product in categories_data:
+        print(product)
