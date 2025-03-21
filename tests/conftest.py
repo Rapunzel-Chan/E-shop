@@ -71,4 +71,4 @@ def product_lawngrass1():
 
 @pytest.fixture
 def product_lawngrass2():
-    return LawnGrass("Газонная трава 2", "Выносливая трава", 450.0, 15, "США", "5 дней", "Темно-зеленый")
+    return LawnGrass("Газонная трава 3", "Выносливая трава", 450.0, 15, "США", "5 дней", "Темно-зеленый")
