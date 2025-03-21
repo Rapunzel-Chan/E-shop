@@ -3,7 +3,7 @@ import json
 import os
 from unittest.mock import mock_open, patch
 
-from src.main import Category, Product, create_objects_from_json, read_json
+from src.main import Category, Product, ProductIterator, create_objects_from_json, read_json
 
 
 def test_product_init(products):
@@ -132,3 +132,40 @@ def test_create_objects_from_json():
     assert categories[0].name == 'Смартфоны'
     assert categories[0].description == 'Описание категории смартфонов'
     assert len(categories[0]._Category__products) == 2
+
+
+def test_product_str_method(product):
+    assert str(product) == "Test Product, 100.0 руб. Остаток: 10 шт."
+
+
+def test_product_add_method():
+    product_a = Product("Товар A", "Описание A", 100, 10)
+    product_b = Product("Товар B", "Описание B", 200, 2)
+
+    expected_total = (product_a.price * product_a.quantity) + (product_b.price * product_b.quantity)
+    total_value = product_a + product_b
+    assert total_value == expected_total
+
+
+def test_category_str_method(category):
+    assert str(category) == "Смартфоны, количество продуктов: 27 шт."
+
+
+def test_product_iterator():
+    product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
+    product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
+    product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
+
+    category1 = Category(
+        "Смартфоны",
+        "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
+        [product1, product2, product3]
+    )
+
+    iterator = ProductIterator(category1)
+    products = [str(product) for product in iterator]
+
+    assert len(products) == 3
+    assert products[0] == str(product1)
+    assert products[1] == str(product2)
+    assert products[2] == str(product3)
