@@ -4,7 +4,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from src.main import Category, Product, ProductIterator, create_objects_from_json, read_json
+from src.main import Category, Product, ProductIterator, create_objects_from_json, read_json, Smartphone, LawnGrass
 
 
 def test_product_init(products):
@@ -209,3 +209,17 @@ def test_lawngrass_add(product_lawngrass1, product_lawngrass2):
 def test_lawngrass_add_error(product_lawngrass1, product_lawngrass2):
     with pytest.raises(TypeError):
         product_lawngrass2 + 1
+
+def test_print_mixin(capsys):
+    Product(name='Test Product', description='Test Description', price=100.0, quantity=10)
+    message = capsys.readouterr()
+    assert message.out.strip() == "Product(Test Product, Test Description, 100.0, 10)"
+
+    Smartphone("Iphone 15", "512GB, Gray space", 210000.0,
+               8, 98.2, "15", 512, "Gray space")
+    message = capsys.readouterr()
+    assert message.out.strip() == "Smartphone(Iphone 15, 512GB, Gray space, 210000.0, 8)"
+
+    LawnGrass("Газонная трава 3", "Выносливая трава", 450.0, 15, "США", "5 дней", "Темно-зеленый")
+    message = capsys.readouterr()
+    assert message.out.strip() == "LawnGrass(Газонная трава 3, Выносливая трава, 450.0, 15)"
