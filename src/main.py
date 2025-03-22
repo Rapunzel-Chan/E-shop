@@ -2,12 +2,14 @@ import json
 import os
 from abc import ABC, abstractmethod
 
+
 class BaseProduct(ABC):
     """Абстрактный класс для всех продуктов"""
     @classmethod
     @abstractmethod
     def new_product(cls, *args, **kwargs):
         pass
+
 
 class PrintMixin:
     """Миксин-класс для вывода информации о принадлежности к классу со списком параметров"""
@@ -16,6 +18,15 @@ class PrintMixin:
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.name}, {self.description}, {self.price}, {self.quantity})'
+
+
+class BaseSale(ABC):
+    """Абстрактный класс для покупки продуктов определенной категории"""
+    @abstractmethod
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
+
 
 class Product(BaseProduct, PrintMixin):
     """Класс для формирования списка продуктов"""
@@ -87,6 +98,7 @@ class Category:
         self.product_count = len(self.__products)
         Category.product_count += self.product_count
         Category.category_count += 1
+        super().__init__()
 
     def __str__(self):
         total_quantity = sum(product.quantity for product in self.__products)
@@ -189,6 +201,16 @@ class LawnGrass(Product):
         raise TypeError
 
 
+class Order(BaseSale):
+    """Класс с заказом на продажу продукта"""
+    def __init__(self, product, quantity):
+        self.product = product
+        self.quantity = quantity
+        self.total_price = product.price * quantity
+        super().__init__(product.name, product.description)
+
+    def __str__(self):
+        return f'Заказ: {self.name}, Количество: {self.quantity}, Итоговая стоимость: {self.total_price} руб.'
 
 
 if __name__ == "__main__":
@@ -353,7 +375,8 @@ if __name__ == "__main__":
     print(product3.quantity)
 
     category1 = Category("Смартфоны",
-                         "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
+                         "Смартфоны, как средство не только коммуникации, "
+                         "но и получения дополнительных функций для удобства жизни",
                          [product1, product2, product3])
 
     print(category1.name == "Смартфоны")
@@ -364,7 +387,8 @@ if __name__ == "__main__":
 
     product4 = Product("55\" QLED 4K", "Фоновая подсветка", 123000.0, 7)
     category2 = Category("Телевизоры",
-                         "Современный телевизор, который позволяет наслаждаться просмотром, станет вашим другом и помощником",
+                         "Современный телевизор, который позволяет наслаждаться просмотром, "
+                         "станет вашим другом и помощником",
                          [product4])
 
     print(category2.name)
@@ -374,3 +398,8 @@ if __name__ == "__main__":
 
     print(Category.category_count)
     print(Category.product_count)
+    smartphone = Smartphone(name="iPhone", description="Смартфон от Apple", price=1000, quantity=10, efficiency="A14",
+                            model="12", memory="128GB", color="Black")
+
+    order = Order(product=smartphone, quantity=2)
+    print(order)
