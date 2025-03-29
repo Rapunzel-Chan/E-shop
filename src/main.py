@@ -47,6 +47,7 @@ class Product(BaseProduct, PrintMixin):
 
     @classmethod
     def new_product(cls, product_data: dict):
+        """Классический метод по добавлению нового продукта"""
         return cls(
             name=product_data['name'],
             description=product_data['description'],
@@ -143,6 +144,7 @@ class Category:
         return products
 
     def middle_price(self):
+        """Функция для подсчета среднего арифметического цен товаров"""
         try:
             if not self.__products:
                 return 0
@@ -161,6 +163,7 @@ def read_json(path: str) -> dict:
 
 
 def create_objects_from_json(data: dict) -> list:
+    """Функция для возврата категорий из json-файла"""
     categories = []
     for category_data in data:
         products = []
