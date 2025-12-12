@@ -39,11 +39,15 @@ class Product(BaseProduct, PrintMixin):
         self.name = name
         self.description = description
         self.__price = price
-        self.quantity = quantity
+        if quantity == 0:
+            raise ValueError("Товар с нулевым значением не может быть добавлен")
+        else:
+            self.quantity = quantity
         super().__init__()
 
     @classmethod
     def new_product(cls, product_data: dict):
+        """Классический метод по добавлению нового продукта"""
         return cls(
             name=product_data['name'],
             description=product_data['description'],
@@ -94,7 +98,7 @@ class Category:
     def __init__(self, name, description, products):
         self.name = name
         self.description = description
-        self.__products = products if products else []
+        self.__products = products if products is not None else []
         self.product_count = len(self.__products)
         Category.product_count += self.product_count
         Category.category_count += 1
@@ -108,17 +112,26 @@ class Category:
         return ProductIterator(self)
 
     def add_product(self, product):
-        """Cпециальный метод добавления товара"""
+        """Cпециальный метод добавления товара без нулевого количества"""
         if isinstance(product, Product):
-            for existing_product in self.__products:
-                if existing_product.name == product.name:
-                    existing_product.quantity += product.quantity
-                    if product.price > existing_product.price:
-                        existing_product.price = product.price
-                    return
-            self.__products.append(product)
-            Category.product_count += 1
-            self.product_count += 1
+            try:
+                if product.quantity == 0:
+                    raise ZeroAddProduct("Нельзя добавлять товар с нулевым значением")
+                for existing_product in self.__products:
+                    if existing_product.name == product.name:
+                        existing_product.quantity += product.quantity
+                        if product.price > existing_product.price:
+                            existing_product.price = product.price
+                            return
+                self.__products.append(product)
+                Category.product_count += 1
+                self.product_count += 1
+            except ZeroAddProduct as e:
+                print(str(e))
+            else:
+                print("Товар успешно добавлен")
+            finally:
+                print("Обработка добавления товара завершена")
         else:
             raise TypeError
 
@@ -130,6 +143,16 @@ class Category:
             products += f"{str(product)}\n"
         return products
 
+    def middle_price(self):
+        """Функция для подсчета среднего арифметического цен товаров"""
+        try:
+            if not self.__products:
+                return 0
+            else:
+                return sum([product.price for product in self.__products]) / len(self.__products)
+        except ZeroDivisionError:
+            return 0
+
 
 def read_json(path: str) -> dict:
     """Функция по считыванию данных из json-файла"""
@@ -140,6 +163,7 @@ def read_json(path: str) -> dict:
 
 
 def create_objects_from_json(data: dict) -> list:
+    """Функция для возврата категорий из json-файла"""
     categories = []
     for category_data in data:
         products = []
@@ -209,8 +233,28 @@ class Order(BaseSale):
         self.total_price = product.price * quantity
         super().__init__(product.name, product.description)
 
+    def add_product(self, product, quantity):
+        """Cпециальный метод добавления товара и проверку на нулевое количество"""
+        try:
+            if quantity == 0:
+                raise ZeroAddProduct("Нельзя добавлять товар с нулевым значением")
+            self.products.append((product, quantity))
+            self.total_price += product.price * quantity
+        except ZeroAddProduct as e:
+            print(str(e))
+        else:
+            print("Товар успешно добавлен")
+        finally:
+            print("Обработка добавления товара завершена")
+
     def __str__(self):
         return f'Заказ: {self.name}, Количество: {self.quantity}, Итоговая стоимость: {self.total_price} руб.'
+
+
+class ZeroAddProduct(Exception):
+    """Класс для вывода сообщения при добавлении нулевого количества товаров"""
+    def __init__(self, message=None):
+        super().__init__(message)
 
 
 if __name__ == "__main__":
@@ -403,3 +447,34 @@ if __name__ == "__main__":
 
     order = Order(product=smartphone, quantity=2)
     print(order)
+
+    try:
+        product_invalid = Product("Бракованный товар", "Неверное количество", 1000.0, 0)
+    except ValueError as e:
+        print(
+            "Возникла ошибка ValueError прерывающая работу программы "
+            "при попытке добавить продукт с нулевым количеством", str(e))
+    else:
+        print("Не возникла ошибка ValueError при попытке добавить продукт с нулевым количеством")
+
+    product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
+    product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
+    product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
+
+    category1 = Category("Смартфоны", "Категория смартфонов", [product1, product2, product3])
+
+    print(category1.middle_price())
+
+    category_empty = Category("Пустая категория", "Категория без продуктов", [])
+    print(category_empty.middle_price())
+
+    # product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
+    # product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
+    # product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 0)
+    #
+    # category1 = Category("Смартфоны", "Категория смартфонов", [product1, product2, product3])
+    #
+    # category1.add_product(product3)
+    # order = Order(product=product1, quantity=2)
+    # print(order)
+    # order.add_product(product3, 0)

@@ -233,3 +233,36 @@ def test_order_creation(product_smartphone2):
     assert order.product.name == "Iphone 15"
     assert order.quantity == 2
     assert order.total_price == 420000
+
+
+def test_middle_price(category, category_without_products):
+    assert category.middle_price() == 140333.33333333334
+    assert category_without_products.middle_price() == 0
+
+
+def test_add_product_with_zero_quantity():
+    with pytest.raises(ValueError, match="Товар с нулевым значением не может быть добавлен"):
+        Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 0)
+
+
+def test_add_product_with_valid_quantity(capsys, category):
+    product = Product("Samsung Galaxy S23 Ultra", "256GB", 180000.0, 5)
+    category.add_product(product)
+    message = capsys.readouterr()
+    assert message.out.strip().split('\n')[-2] == "Товар успешно добавлен"
+    assert message.out.strip().split('\n')[-1] == "Обработка добавления товара завершена"
+
+
+def test_product_initialization_with_zero_quantity_raises_exception():
+    with pytest.raises(ValueError, match="Товар с нулевым значением не может быть добавлен"):
+        Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 0)
+
+
+def test_order_add_product_with_zero_quantity_raises_exception(capsys):
+
+    product = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 10)
+    order = Order(product, 1)
+    order.add_product(product, 0)
+    message = capsys.readouterr()
+    assert message.out.strip().split('\n')[-2] == "Нельзя добавлять товар с нулевым значением"
+    assert message.out.strip().split('\n')[-1] == "Обработка добавления товара завершена"
